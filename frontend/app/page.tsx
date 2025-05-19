@@ -1,62 +1,73 @@
-import Hero from "./__pages/landing/Hero";
+import Footer from "../components/Footer";
+import Navbar from "../components/Navbar";
+import Hero from "../components/Hero";
+import { FaHospitalAlt, FaHandsHelping, FaCapsules, FaHeartbeat } from 'react-icons/fa';
 
 // app/page.tsx (for Next.js App Router setup)
 export default function Home() {
+
+ const partners = [
+    {
+      name: "City Hospital",
+      icon: (
+        <div className="p-4 rounded-full border-4 border-green-200 bg-green-50">
+          <FaHospitalAlt className="text-green-600 text-3xl" />
+        </div>
+      ),
+    },
+    {
+      name: "HealthCare NGO",
+      icon: (
+        <div className="p-4 rounded-full border-4 border-blue-200 bg-blue-50">
+          <FaHandsHelping className="text-blue-600 text-3xl" />
+        </div>
+      ),
+    },
+    {
+      name: "MediPharm",
+      icon: (
+        <div className="p-4 rounded-full border-4 border-purple-200 bg-purple-50">
+          <FaCapsules className="text-purple-600 text-3xl" />
+        </div>
+      ),
+    },
+    {
+      name: "LifeSavers",
+      icon: (
+        <div className="p-4 rounded-full border-4 border-red-200 bg-red-50">
+          <FaHeartbeat className="text-red-600 text-3xl" />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <main className="bg-gradient-to-br from-green-50 to-white text-gray-800">
+      <Navbar/>
       <Hero/>
 
-      {/* Partners */}
-      <section className="py-16 text-center bg-white">
-        <h2 className="text-3xl font-bold mb-2">Our Partners</h2>
-        <p className="text-gray-600 mb-8">
-          Trusted organizations that work with us to make medicine accessible
-        </p>
-        <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-700">
-          {["City Hospital", "HealthCare NGO", "MediPharm", "LifeSavers"].map((name, i) => (
-            <div key={i} className="flex flex-col items-center gap-1">
-              <div className="text-2xl">🏥</div>
-              {name}
-            </div>
-          ))}
-        </div>
-      </section>
+    {/* Partners */}
+<section className="py-20 text-center bg-white">
+  <h2 className="text-4xl font-bold mb-4">Our Partners</h2>
+  <p className="text-gray-600 mb-12 max-w-xl mx-auto">
+    Trusted organizations that work with us to make medicine accessible
+  </p>
 
-      {/* Call to Action */}
-      <section className="bg-green-50 py-16 text-center">
-        <h2 className="text-3xl font-bold mb-4">Join Our Mission Today</h2>
-        <p className="text-gray-700 max-w-2xl mx-auto mb-6">
-          Whether you're donating unused medicines or seeking affordable medication, AushadhiKendra is here to help.
-        </p>
-        <div className="flex justify-center gap-4 mb-10">
-          <button className="bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700">
-            Get Started
-          </button>
-          <button className="border px-5 py-2 rounded hover:bg-gray-100">
-            Contact Us
-          </button>
-        </div>
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto text-left">
-          <div className="bg-white p-6 rounded shadow">
-            <h3 className="font-semibold text-lg mb-2">For Donors</h3>
-            <p className="text-sm text-gray-600">
-              Donate unused medicines or sell at discounted rates. Track your impact.
-            </p>
-            <a href="#" className="text-green-600 text-sm mt-2 inline-block">
-              Register as Donor →
-            </a>
-          </div>
-          <div className="bg-white p-6 rounded shadow">
-            <h3 className="font-semibold text-lg mb-2">For Receivers</h3>
-            <p className="text-sm text-gray-600">
-              Find donated or discounted medicines. Verify authenticity with QR codes.
-            </p>
-            <a href="#" className="text-green-600 text-sm mt-2 inline-block">
-              Register as Receiver →
-            </a>
-          </div>
-        </div>
-      </section>
+  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 px-4 sm:px-6 md:px-8 max-w-4xl mx-auto">
+    {partners.map((partner, i) => (
+      <div
+        key={i}
+        className="transition-all duration-300 rounded-xl p-6 flex flex-col items-center hover:scale-105 bg-white"
+      >
+        {partner.icon}
+        <p className="mt-3 font-medium text-gray-800">{partner.name}</p>
+      </div>
+    ))}
+  </div>
+</section>
+
+
+    <Footer/>
      
     </main>
   );
