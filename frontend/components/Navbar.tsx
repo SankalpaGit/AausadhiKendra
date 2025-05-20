@@ -60,11 +60,11 @@ export default function Navbar() {
             </button>
             {dropdownOpen.register && (
               <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-40 text-left">
-                <a href="/register/donor" className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50">
+                <a href="/donor/register/" className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50">
                   <FaUserPlus className="text-green-600" />
                   Donor
                 </a>
-                <a href="/register/receiver" className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50">
+                <a href="/receiver/register/" className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50">
                   <FaUserPlus className="text-green-600" />
                   Receiver
                 </a>

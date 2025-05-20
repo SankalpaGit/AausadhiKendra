@@ -34,14 +34,6 @@ export default function Page() {
     ]);
 
 
-
-    const handleEdit = (id: number) => {
-        const updated = medicines.map((med) =>
-            med.id === id ? { ...med, name: med.name + ' (edited)' } : med
-        );
-        setMedicines(updated);
-    };
-
     const handleDelete = (id: number) => {
         setMedicines(medicines.filter((med) => med.id !== id));
     };
@@ -92,7 +84,6 @@ export default function Page() {
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-4">
                                             <button
-                                                onClick={() => handleEdit(med.id)}
                                                 className="text-blue-600 hover:text-blue-800"
                                                 title="Edit"
                                             >
