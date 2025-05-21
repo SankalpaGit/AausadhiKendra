@@ -6,7 +6,7 @@ import { FaHospitalAlt, FaHandsHelping, FaCapsules, FaHeartbeat } from 'react-ic
 // app/page.tsx (for Next.js App Router setup)
 export default function Home() {
 
- const partners = [
+  const partners = [
     {
       name: "City Hospital",
       icon: (
@@ -43,32 +43,32 @@ export default function Home() {
 
   return (
     <main className="bg-gradient-to-br from-green-50 to-white text-gray-800">
-      <Navbar/>
-      <Hero/>
+      <Navbar />
+      <Hero />
 
-    {/* Partners */}
-<section className="py-20 text-center bg-white">
-  <h2 className="text-4xl font-bold mb-4">Our Partners</h2>
-  <p className="text-gray-600 mb-12 max-w-xl mx-auto">
-    Trusted organizations that work with us to make medicine accessible
-  </p>
+      {/* Partners */}
+      <section className="py-20 text-center bg-white">
+        <h2 className="text-4xl font-bold mb-4">Our Partners</h2>
+        <p className="text-gray-600 mb-12 max-w-xl mx-auto">
+          Trusted organizations that work with us to make medicine accessible
+        </p>
 
-  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 px-4 sm:px-6 md:px-8 max-w-4xl mx-auto">
-    {partners.map((partner, i) => (
-      <div
-        key={i}
-        className="transition-all duration-300 rounded-xl p-6 flex flex-col items-center hover:scale-105 bg-white"
-      >
-        {partner.icon}
-        <p className="mt-3 font-medium text-gray-800">{partner.name}</p>
-      </div>
-    ))}
-  </div>
-</section>
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 px-4 sm:px-6 md:px-8 max-w-4xl mx-auto">
+          {partners.map((partner, i) => (
+            <div
+              key={i}
+              className="transition-all duration-300 rounded-xl p-6 flex flex-col items-center hover:scale-105 bg-white"
+            >
+              {partner.icon}
+              <p className="mt-3 font-medium text-gray-800">{partner.name}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
 
-    <Footer/>
-     
+      <Footer />
+
     </main>
   );
 }

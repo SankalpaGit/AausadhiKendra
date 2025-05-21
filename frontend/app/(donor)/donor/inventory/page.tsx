@@ -43,13 +43,8 @@ export default function Page() {
             <Navbar />
             <div className="p-8 max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-semibold text-gray-800">Medicine Inventory</h1>
-                    <button
-                        className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 shadow"
-                    >
-                        <FaPlus />
-                        Add Medicine
-                    </button>
+                    <h1 className="text-3xl font-bold text-gray-700">Medicine Inventory</h1>
+                   
                 </div>
 
                 <div className="overflow-x-auto rounded-lg border border-gray-200">
