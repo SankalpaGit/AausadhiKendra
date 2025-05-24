@@ -1,6 +1,8 @@
 using backend.Data;
+using backend.DTOs.Request;
 using backend.Models;
 using backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IO;
@@ -25,34 +27,46 @@ public class ReceiverController : ControllerBase
     }
 
     [HttpPost("register")]
-    public IActionResult Register([FromForm] RecieverModel receiver, IFormFile? document)
+    public IActionResult Register([FromForm] RegisterRequest receiverDto)
     {
-        if (receiver.ReceiverType == "Organization")
+        if (receiverDto.DonorType == "Organization" && receiverDto.Document == null)
         {
-            if (document == null)
-            {
-                return BadRequest(new { message = "Document is required for organization receivers." });
-            }
+            return BadRequest(new { message = "Document is required for organization receivers." });
+        }
 
+        var receiver = new RecieverModel
+        {
+            Id = Guid.NewGuid(),
+            FullName = receiverDto.FullName,
+            ReceiverType = receiverDto.DonorType,
+            OrganizationType = receiverDto.OrganizationType,
+            Email = receiverDto.Email,
+            Password = _passwordService.HashPassword(receiverDto.Password),
+            IsVerified = receiverDto.DonorType == "Individual" // Automatically verified for individuals
+        };
+
+        if (receiverDto.DonorType == "Organization")
+        {
             string uploadsDir = Path.Combine(_env.WebRootPath, "Uploads");
             if (!Directory.Exists(uploadsDir))
             {
                 Directory.CreateDirectory(uploadsDir);
             }
 
-            string filePath = Path.Combine(uploadsDir, document.FileName);
+            if (receiverDto.Document == null)
+            {
+                return BadRequest(new { message = "Document is required for organization receivers." });
+            }
+
+            string filePath = Path.Combine(uploadsDir, receiverDto.Document.FileName);
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                document.CopyTo(stream);
+                receiverDto.Document.CopyTo(stream);
             }
 
             receiver.DocumentPath = filePath;
         }
 
-        // Hash the password before saving
-        receiver.Password = _passwordService.HashPassword(receiver.Password);
-
-        // Save receiver to database
         _dbContext.Receivers.Add(receiver);
         _dbContext.SaveChanges();
 
@@ -60,21 +74,25 @@ public class ReceiverController : ControllerBase
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] RecieverModel receiver)
+    public IActionResult Login([FromBody] LoginRequest receiverDto)
     {
-        var existingReceiver = _dbContext.Receivers.FirstOrDefault(r => r.Email == receiver.Email);
-        if (existingReceiver == null || !_passwordService.VerifyPassword(receiver.Password, existingReceiver.Password))
+        var receiver = _dbContext.Receivers.FirstOrDefault(r => r.Email == receiverDto.Email);
+        if (receiver == null || !_passwordService.VerifyPassword(receiverDto.Password, receiver.Password))
         {
             return Unauthorized(new { message = "Invalid email or password." });
         }
 
-        // Generate JWT token
-        var token = _jwtService.GenerateToken(existingReceiver.Id, existingReceiver.Email, existingReceiver.ReceiverType);
+        if (receiver.ReceiverType == "Organization" && !receiver.IsVerified)
+        {
+            return Unauthorized(new { message = "Your account is not verified yet." });
+        }
 
+        var token = _jwtService.GenerateToken(receiver.Id, receiver.Email, receiver.ReceiverType);
         return Ok(new { token });
     }
 
     [HttpPut("verify/{id}")]
+    [Authorize(Roles = "Admin")]
     public IActionResult VerifyReceiver(Guid id, [FromBody] bool isVerified)
     {
         var receiver = _dbContext.Receivers.FirstOrDefault(r => r.Id == id && r.ReceiverType == "Organization");

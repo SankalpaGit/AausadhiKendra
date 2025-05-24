@@ -1,6 +1,8 @@
 using backend.Data;
+using backend.DTOs.Request;
 using backend.Models;
 using backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IO;
@@ -25,34 +27,46 @@ public class DonorController : ControllerBase
     }
 
     [HttpPost("register")]
-    public IActionResult Register([FromForm] DonorModel donor, IFormFile? document)
+    public IActionResult Register([FromForm] RegisterRequest donorDto)
     {
-        if (donor.DonorType == "Organization")
+        if (donorDto.DonorType == "Organization" && donorDto.Document == null)
         {
-            if (document == null)
-            {
-                return BadRequest(new { message = "Document is required for organization donors." });
-            }
+            return BadRequest(new { message = "Document is required for organization donors." });
+        }
 
+        var donor = new DonorModel
+        {
+            Id = Guid.NewGuid(),
+            FullName = donorDto.FullName,
+            DonorType = donorDto.DonorType,
+            OrganizationType = donorDto.OrganizationType,
+            Email = donorDto.Email,
+            Password = _passwordService.HashPassword(donorDto.Password),
+            IsVerified = donorDto.DonorType == "Individual" // Automatically verified for individuals
+        };
+
+        if (donorDto.DonorType == "Organization")
+        {
             string uploadsDir = Path.Combine(_env.WebRootPath, "Uploads");
             if (!Directory.Exists(uploadsDir))
             {
                 Directory.CreateDirectory(uploadsDir);
             }
 
-            string filePath = Path.Combine(uploadsDir, document.FileName);
+            if (donorDto.Document == null)
+            {
+                return BadRequest(new { message = "Document is required for organization donors." });
+            }
+
+            string filePath = Path.Combine(uploadsDir, donorDto.Document.FileName);
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                document.CopyTo(stream);
+                donorDto.Document.CopyTo(stream);
             }
 
             donor.DocumentPath = filePath;
         }
 
-        // Hash the password before saving
-        donor.Password = _passwordService.HashPassword(donor.Password);
-
-        // Save donor to database
         _dbContext.Donors.Add(donor);
         _dbContext.SaveChanges();
 
@@ -60,21 +74,25 @@ public class DonorController : ControllerBase
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] DonorModel donor)
+    public IActionResult Login([FromBody] LoginRequest donorDto)
     {
-        var existingDonor = _dbContext.Donors.FirstOrDefault(d => d.Email == donor.Email);
-        if (existingDonor == null || !_passwordService.VerifyPassword(donor.Password, existingDonor.Password))
+        var donor = _dbContext.Donors.FirstOrDefault(d => d.Email == donorDto.Email);
+        if (donor == null || !_passwordService.VerifyPassword(donorDto.Password, donor.Password))
         {
             return Unauthorized(new { message = "Invalid email or password." });
         }
 
-        // Generate JWT token
-        var token = _jwtService.GenerateToken(existingDonor.Id, existingDonor.Email, existingDonor.DonorType);
+        if (donor.DonorType == "Organization" && !donor.IsVerified)
+        {
+            return Unauthorized(new { message = "Your account is not verified yet." });
+        }
 
+        var token = _jwtService.GenerateToken(donor.Id, donor.Email, donor.DonorType);
         return Ok(new { token });
     }
 
     [HttpPut("verify/{id}")]
+    [Authorize(Roles = "Admin")]
     public IActionResult VerifyDonor(Guid id, [FromBody] bool isVerified)
     {
         var donor = _dbContext.Donors.FirstOrDefault(d => d.Id == id && d.DonorType == "Organization");

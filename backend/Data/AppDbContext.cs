@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     // models import and naming starts from here
     public DbSet<DonorModel> Donors { get; set; } // DonorModel name as Donors in database
     public DbSet<RecieverModel> Receivers { get; set; } // RecieverModel name as Receivers in database
+    public DbSet<AdminModel> Admins { get; set; } // AdminModel name as Admins in database
 
     // Model builder configuration
     // This method is called when the model for a derived context is being created.
