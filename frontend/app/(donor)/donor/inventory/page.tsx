@@ -44,7 +44,6 @@ export default function Page() {
             <div className="p-8 max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-3xl font-bold text-gray-700">Medicine Inventory</h1>
-                   
                 </div>
 
                 <div className="overflow-x-auto rounded-lg border border-gray-200">
