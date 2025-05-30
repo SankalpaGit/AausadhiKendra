@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<RecieverModel> Receivers { get; set; } // RecieverModel name as Receivers in database
     public DbSet<AdminModel> Admins { get; set; } // AdminModel name as Admins in database
     public DbSet<MedicineModel> Medicines { get; set; } // MedicineModel name as Medicines in database
+    public DbSet<DeliveryPartnerModel> DeliveryPartners { get; set; } // DeliveryPartnerModel name as DeliveryPartners in database
 
     // Model builder configuration
     // This method is called when the model for a derived context is being created.
