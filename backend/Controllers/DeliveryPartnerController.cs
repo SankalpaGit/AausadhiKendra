@@ -2,8 +2,8 @@ using backend.Data;
 using backend.DTOs.Request;
 using backend.Models;
 using backend.Services;
+using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers;
@@ -13,15 +13,16 @@ namespace backend.Controllers;
 public class DeliveryPartnerController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
-    private readonly JwtServices _jwtService;
-
     private readonly HashedPassword _passwordService;
+    private readonly JwtServices _jwtService;
+    private readonly EmailService _emailService;
 
-    public DeliveryPartnerController(AppDbContext dbContext, HashedPassword passwordService, JwtServices jwtService)
+    public DeliveryPartnerController(AppDbContext dbContext, HashedPassword passwordService, JwtServices jwtService, EmailService emailService)
     {
         _dbContext = dbContext;
         _passwordService = passwordService;
         _jwtService = jwtService;
+        _emailService = emailService;
     }
 
     [HttpPost("register")]
@@ -54,9 +55,9 @@ public class DeliveryPartnerController : ControllerBase
         return Ok(new { message = "Delivery partner registered successfully! Awaiting admin approval." });
     }
 
-    [HttpPut("approve-delivery-partner/{id}")]
+    [HttpPut("approve/{id}")]
     [Authorize(Roles = "Admin")]
-    public IActionResult ApproveDeliveryPartner(Guid id, [FromBody] bool isApproved)
+    public IActionResult ApproveDeliveryPartner(Guid id)
     {
         var deliveryPartner = _dbContext.DeliveryPartners.FirstOrDefault(dp => dp.Id == id);
         if (deliveryPartner == null)
@@ -64,10 +65,46 @@ public class DeliveryPartnerController : ControllerBase
             return NotFound(new { message = "Delivery partner not found." });
         }
 
-        deliveryPartner.IsApproved = isApproved;
+        deliveryPartner.IsApproved = true;
         _dbContext.SaveChanges();
 
-        return Ok(new { message = isApproved ? "Delivery partner approved successfully!" : "Delivery partner rejected successfully!" });
+        // Send approval email
+        var subject = "Registration Approved";
+        var body = $@"
+            <h1>Congratulations, {deliveryPartner.FirstName}!</h1>
+            <p>Your registration as a delivery partner has been approved.</p>
+            <p>You can now log in to your account using the following link:</p>
+            <a href='http://localhost:3000/login' style='padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none;'>Login</a>
+        ";
+        _emailService.SendEmail(deliveryPartner.Email, subject, body);
+
+        return Ok(new { message = "Delivery partner approved successfully!" });
+    }
+
+    [HttpPut("reject/{id}")]
+    [Authorize(Roles = "Admin")]
+    public IActionResult RejectDeliveryPartner(Guid id)
+    {
+        var deliveryPartner = _dbContext.DeliveryPartners.FirstOrDefault(dp => dp.Id == id);
+        if (deliveryPartner == null)
+        {
+            return NotFound(new { message = "Delivery partner not found." });
+        }
+
+        // Remove the delivery partner from the database
+        _dbContext.DeliveryPartners.Remove(deliveryPartner);
+        _dbContext.SaveChanges();
+
+        // Send rejection email
+        var subject = "Registration Rejected";
+        var body = $@"
+            <h1>Dear {deliveryPartner.FirstName},</h1>
+            <p>We regret to inform you that your registration as a delivery partner has been rejected.</p>
+            <p>If you have any questions, please contact our support team.</p>
+        ";
+        _emailService.SendEmail(deliveryPartner.Email, subject, body);
+
+        return Ok(new { message = "Delivery partner rejected successfully!" });
     }
 
     [HttpPost("login")]
@@ -79,7 +116,7 @@ public class DeliveryPartnerController : ControllerBase
             return Unauthorized(new { message = "Your account is not approved yet or invalid credentials." });
         }
 
-        if (deliveryPartner.Password != request.Password) // Assuming plain-text password for simplicity
+        if (!_passwordService.VerifyPassword(request.Password, deliveryPartner.Password))
         {
             return Unauthorized(new { message = "Invalid email or password." });
         }
