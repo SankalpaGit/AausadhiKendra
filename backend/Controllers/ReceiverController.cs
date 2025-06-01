@@ -27,7 +27,7 @@ public class ReceiverController : ControllerBase
     }
 
     [HttpPost("register")]
-    public IActionResult Register([FromForm] RegisterRequest receiverDto)
+    public async Task<IActionResult> Register([FromForm] RegisterRequest receiverDto)
     {
         if (receiverDto.DonorType == "Organization" && receiverDto.Document == null)
         {
@@ -47,24 +47,35 @@ public class ReceiverController : ControllerBase
 
         if (receiverDto.DonorType == "Organization")
         {
-            string uploadsDir = Path.Combine(_env.WebRootPath, "Uploads");
-            if (!Directory.Exists(uploadsDir))
+            // Ensure WebRootPath is not null
+            if (string.IsNullOrEmpty(_env.WebRootPath))
             {
-                Directory.CreateDirectory(uploadsDir);
+                return StatusCode(500, new { message = "Server configuration error: WebRootPath is not set." });
             }
 
+            // Define the uploads folder path
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            // Generate a unique file name
             if (receiverDto.Document == null)
             {
                 return BadRequest(new { message = "Document is required for organization receivers." });
             }
+            var uniqueFileName = $"{Guid.NewGuid()}_{receiverDto.Document.FileName}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-            string filePath = Path.Combine(uploadsDir, receiverDto.Document.FileName);
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            // Save the file
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
-                receiverDto.Document.CopyTo(stream);
+                await receiverDto.Document.CopyToAsync(fileStream);
             }
 
-            receiver.DocumentPath = filePath;
+            // Store the relative path in the database
+            receiver.DocumentPath = Path.Combine("Uploads", uniqueFileName);
         }
 
         _dbContext.Receivers.Add(receiver);

@@ -27,7 +27,7 @@ public class DonorController : ControllerBase
     }
 
     [HttpPost("register")]
-    public IActionResult Register([FromForm] RegisterRequest donorDto)
+    public async Task<IActionResult> Register([FromForm] RegisterRequest donorDto)
     {
         if (donorDto.DonorType == "Organization" && donorDto.Document == null)
         {
@@ -47,24 +47,35 @@ public class DonorController : ControllerBase
 
         if (donorDto.DonorType == "Organization")
         {
-            string uploadsDir = Path.Combine(_env.WebRootPath, "Uploads");
-            if (!Directory.Exists(uploadsDir))
+            // Ensure WebRootPath is not null
+            if (string.IsNullOrEmpty(_env.WebRootPath))
             {
-                Directory.CreateDirectory(uploadsDir);
+                return StatusCode(500, new { message = "Server configuration error: WebRootPath is not set." });
             }
 
+            // Define the uploads folder path
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            // Generate a unique file name
             if (donorDto.Document == null)
             {
                 return BadRequest(new { message = "Document is required for organization donors." });
             }
+            var uniqueFileName = $"{Guid.NewGuid()}_{donorDto.Document.FileName}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-            string filePath = Path.Combine(uploadsDir, donorDto.Document.FileName);
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            // Save the file
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
-                donorDto.Document.CopyTo(stream);
+                await donorDto.Document.CopyToAsync(fileStream);
             }
 
-            donor.DocumentPath = filePath;
+            // Store the relative path in the database
+            donor.DocumentPath = Path.Combine("Uploads", uniqueFileName);
         }
 
         _dbContext.Donors.Add(donor);

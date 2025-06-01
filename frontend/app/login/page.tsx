@@ -28,7 +28,10 @@ export default function Page() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-green-300 via-blue-200 to-purple-300">
+    <div className="flex items-center justify-center min-h-screen">
+      <div>
+          <img src="" alt=""  />
+      </div>
       <div className="bg-white p-10 rounded-xl shadow-xl w-full max-w-md">
         <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-4">Welcome Back</h2>
         <p className="text-center text-gray-500 mb-8">Login to your account</p>

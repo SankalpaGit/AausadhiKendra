@@ -7,8 +7,12 @@ using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Microsoft.Extensions.FileProviders;
 
-// Create a new web application builder
-var builder = WebApplication.CreateBuilder(args);
+// Create a new web application builder with WebApplicationOptions
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    ContentRootPath = AppContext.BaseDirectory,
+    WebRootPath = "Uploads" // Set the web root to the "Uploads" directory
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
