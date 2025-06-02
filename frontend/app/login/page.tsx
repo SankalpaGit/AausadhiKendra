@@ -30,7 +30,7 @@ export default function Page() {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div>
-          <img src="" alt=""  />
+          <img src="/" alt=""  />
       </div>
       <div className="bg-white p-10 rounded-xl shadow-xl w-full max-w-md">
         <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-4">Welcome Back</h2>
