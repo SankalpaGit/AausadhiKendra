@@ -40,7 +40,7 @@ export default function Page() {
 
     return (
         <>
-            <Navbar />
+  
             <div className="p-8 max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-3xl font-bold text-gray-700">Medicine Inventory</h1>

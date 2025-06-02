@@ -6,7 +6,7 @@ import { FaBars, FaTimes, FaUserPlus, FaUser } from "react-icons/fa";
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState({ login: false, register: false });
-   const router = useRouter()
+  const router = useRouter()
   const navLinks = [
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
@@ -17,10 +17,10 @@ export default function Navbar() {
       <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between relative">
         {/* Left Side */}
         <div className="flex items-center gap-10">
-            <a href="/">
+          <a href="/">
             <div className="text-xl font-bold text-green-600">AushadhiKendra</div>
-            </a>
-          
+          </a>
+
           <ul className="hidden md:flex gap-6 text-gray-700 font-medium">
             {navLinks.map((link) => (
               <li key={link.name}>
@@ -37,12 +37,12 @@ export default function Navbar() {
           {/* Login Dropdown */}
           <div className="relative">
             <button
-             onClick={()=>router.push('/login')}
+              onClick={() => router.push('/login')}
               className="px-4 py-2 border rounded hover:bg-gray-100 transition"
             >
-              Login 
+              Login
             </button>
-            
+
           </div>
 
           {/* Register Dropdown */}

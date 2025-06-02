@@ -11,7 +11,6 @@ export default function Page() {
 
     return (
         <>
-            <Navbar />
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 p-6 min-h-screen">
                 {/* Single Medicine Upload */}
                 <div className="bg-white shadow-md rounded-xl border border-gray-200 p-6 h-fit space-y-6">

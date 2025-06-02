@@ -25,11 +25,10 @@ export default function Page() {
             <button
               key={type}
               onClick={() => setUserType(type as "individual" | "organization")}
-              className={`w-full py-2 font-medium transition ${
-                userType === type
-                  ? "bg-green-600 text-white"
-                  : "bg-white text-green-600"
-              }`}
+              className={`w-full py-2 font-medium transition ${userType === type
+                ? "bg-green-600 text-white"
+                : "bg-white text-green-600"
+                }`}
             >
               {type.charAt(0).toUpperCase() + type.slice(1)}
             </button>
