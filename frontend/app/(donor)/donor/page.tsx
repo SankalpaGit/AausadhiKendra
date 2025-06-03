@@ -1,4 +1,5 @@
 "use client";
+import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 
 export default function Page() {
@@ -13,12 +14,14 @@ export default function Page() {
   if (!hasMounted) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-8">
-        <h1 className="text-3xl font-bold text-green-700 mb-8 text-center">
-          Donor Registration
-        </h1>
-
+    <>
+    <Navbar/>
+    <div className="min-h-screen  py-10 px-4 flex">
+      <div className=" lg:flex lg:w-6/12 justify-between items-center">
+        <img src="/auth.jpg" alt="" />
+      </div>
+      <div className="w-5/12 mx-auto  border border-gray-400 px-8 py-8 rounded-md h-fit m-auto">
+        
         {/* Tabs */}
         <div className="grid grid-cols-2 mb-8 border border-green-600 rounded-sm overflow-hidden">
           {["individual", "organization"].map((type) => (
@@ -123,5 +126,6 @@ export default function Page() {
         </form>
       </div>
     </div>
+    </>
   );
 }
