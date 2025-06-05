@@ -1,3 +1,4 @@
+// components/ui/Dropdown.tsx
 'use client';
 import React, { useState } from 'react';
 
@@ -27,7 +28,7 @@ const Dropdown = ({
             border: '1px solid #ccc',
             padding: '10px',
             zIndex: 10,
-            minWidth: '160px',
+            minWidth: '180px',
             borderRadius: '0.375rem',
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
           }}
