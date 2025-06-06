@@ -36,11 +36,11 @@ export default function Sidebar({ sidebarOpen, toggleSidebar }: SidebarProps) {
   return (
     <aside
       className={`
-        fixed z-40 inset-y-0 left-0 w-64 bg-teal-900 text-white p-4
-        transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        md:translate-x-0 md:static md:inset-auto
-      `}
+    fixed inset-y-0 left-0 w-64 transform transition-transform duration-300 ease-in-out
+    bg-teal-900 text-white p-4 z-40
+    ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+    md:static md:translate-x-0 md:block
+  `}
     >
       <h2 className="text-2xl font-bold mb-6 text-white">AausadhiKendra</h2>
 
@@ -65,9 +65,8 @@ export default function Sidebar({ sidebarOpen, toggleSidebar }: SidebarProps) {
               Registration
             </span>
             <FiChevronDown
-              className={`transform transition-transform ${
-                openReg ? 'rotate-180' : ''
-              }`}
+              className={`transform transition-transform ${openReg ? 'rotate-180' : ''
+                }`}
             />
           </button>
           {openReg && (
@@ -120,9 +119,8 @@ export default function Sidebar({ sidebarOpen, toggleSidebar }: SidebarProps) {
               Orders
             </span>
             <FiChevronDown
-              className={`transform transition-transform ${
-                openOrders ? 'rotate-180' : ''
-              }`}
+              className={`transform transition-transform ${openOrders ? 'rotate-180' : ''
+                }`}
             />
           </button>
           {openOrders && (
