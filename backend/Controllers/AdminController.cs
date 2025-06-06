@@ -1,8 +1,6 @@
 using backend.Data;
 using backend.DTOs.Request;
-using backend.Models;
 using backend.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers;

@@ -61,7 +61,7 @@ namespace backend.Controllers
         }
 
         [HttpGet("view")]
-        [Authorize(Roles = "Receiver")]
+        [Authorize(Roles = "Donor")]
         public IActionResult ViewMedicines(int page = 1, int pageSize = 10)
         {
             var query = _dbContext.Medicines.AsQueryable();

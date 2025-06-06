@@ -2,6 +2,7 @@ using backend.Data;
 using backend.DTOs.Request;
 using backend.Models;
 using backend.Services;
+using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,13 +18,14 @@ public class DonorController : ControllerBase
     private readonly IWebHostEnvironment _env;
     private readonly HashedPassword _passwordService;
     private readonly JwtServices _jwtService;
-
-    public DonorController(AppDbContext dbContext, IWebHostEnvironment env, HashedPassword passwordService, JwtServices jwtService)
+    private readonly EmailService _emailService;
+    public DonorController(AppDbContext dbContext, IWebHostEnvironment env, HashedPassword passwordService, EmailService emailService, JwtServices jwtService)
     {
         _dbContext = dbContext;
         _env = env;
         _passwordService = passwordService;
         _jwtService = jwtService;
+        _emailService = emailService;
     }
 
     [HttpPost("register")]
@@ -112,9 +114,39 @@ public class DonorController : ControllerBase
             return NotFound(new { message = "Organization donor not found." });
         }
 
-        donor.IsVerified = isVerified;
-        _dbContext.SaveChanges();
+        if (isVerified)
+        {
+            donor.IsVerified = true;
+            _dbContext.SaveChanges();
 
-        return Ok(new { message = isVerified ? "Donor verified successfully!" : "Donor rejected successfully!" });
+            // Send approval email
+            var subject = "Registration Approved";
+            var body = $@"
+            <h1>Congratulations, {donor.FullName}!</h1>
+            <p>Your registration as a donor has been approved.</p>
+            <p>You can now log in to your account using the following link:</p>
+            <a href='http://localhost:3000/login' style='padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none;'>Login</a>
+        ";
+            _emailService.SendEmail(donor.Email, subject, body);
+
+            return Ok(new { message = "Donor verified successfully!" });
+        }
+        else
+        {
+            // Optionally remove the donor from the database
+            _dbContext.Donors.Remove(donor);
+            _dbContext.SaveChanges();
+
+            // Send rejection email
+            var subject = "Registration Rejected";
+            var body = $@"
+            <h1>Dear {donor.FullName},</h1>
+            <p>We regret to inform you that your registration as a donor has been rejected.</p>
+            <p>If you have any questions, please contact our support team.</p>
+        ";
+            _emailService.SendEmail(donor.Email, subject, body);
+
+            return Ok(new { message = "Donor rejected successfully!" });
+        }
     }
 }
