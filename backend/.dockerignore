@@ -1,0 +1,6 @@
+bin/
+obj/
+*.log
+*.csproj.user
+appsettings.Development.json
+Dockerfile
