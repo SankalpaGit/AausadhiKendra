@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Microsoft.Extensions.FileProviders;
+using Stripe;
+using backend.Models;
 
 // Create a new web application builder with WebApplicationOptions
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -15,7 +17,6 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 });
 
 // Add services to the container.
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -47,6 +48,9 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// Load Stripe configuration from appsettings.json
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+
 // Register the DbContext with PGSQL connection string
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSqlConnection")));
@@ -68,6 +72,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<JwtServices>(); // JWT service for token generation and validation
 builder.Services.AddScoped<HashedPassword>(); // Password hashing service
 builder.Services.AddScoped<EmailService>(); // Email service for sending emails
+builder.Services.AddScoped<StripeService>(); // Stripe service for payment processing
 
 
 // Configure JWT authentication
@@ -85,6 +90,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured.")))
         };
     });
+
+// Add service to the controller
+builder.Services.AddControllers();
+
 
 //place your custome service or builder service above this line
 var app = builder.Build();
