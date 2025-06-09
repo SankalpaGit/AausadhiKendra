@@ -3,14 +3,15 @@ using backend.Models;
 using backend.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stripe;
+using backend.DTOs.Request;
 using System.Security.Claims;
-
 
 namespace backend.Controllers;
 
 [ApiController]
 [Route("api/order")]
-[Authorize(Roles = "Donor")]// Ensure only authenticated users can access this API
+[Authorize]
 public class OrderController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
@@ -20,10 +21,8 @@ public class OrderController : ControllerBase
         _dbContext = dbContext;
     }
 
-    // API to order medicine
-    [HttpPost("donation")]
-    // Ensure only donors can access this endpoint
-    public IActionResult OrderMedicine(Guid medicineId, Guid deliveryPartnerId)
+    [HttpPost("create")]
+    public IActionResult CreateOrder([FromBody] CreateOrderRequest request)
     {
         // Get the authenticated donor's ID from JWT claims
         var donorIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -32,56 +31,76 @@ public class OrderController : ControllerBase
             return Unauthorized(new { message = "Invalid or missing donor ID in token." });
         }
 
-        // Fetch the medicine from the database
-        var medicine = _dbContext.Medicines.FirstOrDefault(m => m.MedicineId == medicineId);
-        if (medicine == null)
-        {
-            return NotFound(new { message = "Medicine not found." });
-        }
+        // Validate and process the order items
+        var orderItems = new List<OrderItemModel>();
+        decimal totalAmount = 0;
 
-        // Ensure the medicine is not added by the same donor
-        if (medicine.DonorId == donorId)
+        foreach (var item in request.OrderItems)
         {
-            return BadRequest(new { message = "You cannot order your own medicine." });
-        }
+            var medicine = _dbContext.Medicines.FirstOrDefault(m => m.MedicineId == item.MedicineId);
+            if (medicine == null)
+            {
+                return NotFound(new { message = $"Medicine with ID {item.MedicineId} not found." });
+            }
 
-        // Ensure the medicine status is "Donation"
-        if (medicine.Status != MedicineStatus.Donation)
-        {
-            return BadRequest(new { message = "Only medicines with 'Donation' status can be ordered." });
-        }
+            if (medicine.DonorId == donorId)
+            {
+                return BadRequest(new { message = "You cannot order your own medicine." });
+            }
 
-        // Fetch the delivery partner from the database
-        var deliveryPartner = _dbContext.DeliveryPartners.FirstOrDefault(dp => dp.Id == deliveryPartnerId && dp.IsApproved);
-        if (deliveryPartner == null)
-        {
-            return NotFound(new { message = "Delivery partner not found or not approved." });
-        }
+            if (medicine.Status == MedicineStatus.Sales)
+            {
+                totalAmount += medicine.UnitPrice * item.Quantity; // Calculate total for sales medicines
+            }
 
-        // Fetch the donor from the database
-        var donor = _dbContext.Donors.FirstOrDefault(d => d.Id == donorId);
-        if (donor == null)
-        {
-            return NotFound(new { message = "Donor not found." });
+            var deliveryPartner = _dbContext.DeliveryPartners.FirstOrDefault(dp => dp.Id == item.DeliveryPartnerId && dp.IsApproved);
+            if (deliveryPartner == null)
+            {
+                return NotFound(new { message = $"Delivery partner with ID {item.DeliveryPartnerId} not found or not approved." });
+            }
+
+            orderItems.Add(new OrderItemModel
+            {
+                Id = Guid.NewGuid(),
+                MedicineId = item.MedicineId,
+                Quantity = item.Quantity,
+                DeliveryPartnerId = item.DeliveryPartnerId
+            });
         }
 
         // Create the order
         var order = new OrderModel
         {
             Id = Guid.NewGuid(),
-            MedicineId = medicine.MedicineId,
             OrderedByDonorId = donorId,
-            DeliveryPartnerId = deliveryPartner.Id,
             OrderDate = DateTime.UtcNow,
-            OrderedByDonor = donor,
-            DeliveryPartner = deliveryPartner,
-            Medicine = medicine // Set the required Medicine property
+            OrderItems = orderItems,
+            TotalAmount = totalAmount
         };
 
-        // Save the order to the database
         _dbContext.Orders.Add(order);
         _dbContext.SaveChanges();
 
-        return Ok(new { message = "Medicine ordered successfully!", orderId = order.Id });
+        // Handle payment if totalAmount > 0
+        if (totalAmount > 0)
+        {
+            var stripeOptions = new ChargeCreateOptions
+            {
+                Amount = (long)(totalAmount * 100), // Stripe expects amount in cents
+                Currency = "usd",
+                Description = "Medicine Order Payment",
+                Source = request.StripeToken // Token from frontend
+            };
+
+            var stripeService = new ChargeService();
+            var charge = stripeService.Create(stripeOptions);
+
+            if (charge.Status != "succeeded")
+            {
+                return BadRequest(new { message = "Payment failed." });
+            }
+        }
+
+        return Ok(new { message = "Order created successfully!", orderId = order.Id });
     }
 }
