@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Stripe;
 using backend.DTOs.Request;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
+using backend.Services;
 
 namespace backend.Controllers;
 
@@ -15,10 +17,12 @@ namespace backend.Controllers;
 public class OrderController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
+    private readonly StripeService _stripeService;
 
-    public OrderController(AppDbContext dbContext)
+    public OrderController(AppDbContext dbContext, StripeService stripeService)
     {
         _dbContext = dbContext;
+        _stripeService = stripeService;
     }
 
     [HttpPost("create")]
@@ -31,41 +35,41 @@ public class OrderController : ControllerBase
             return Unauthorized(new { message = "Invalid or missing donor ID in token." });
         }
 
-        // Validate and process the order items
-        var orderItems = new List<OrderItemModel>();
-        decimal totalAmount = 0;
+        // Get the donor's cart
+        var cart = _dbContext.Carts
+            .Include(c => c.CartItems)
+            .ThenInclude(ci => ci.Medicine)
+            .FirstOrDefault(c => c.DonorId == donorId);
 
-        foreach (var item in request.OrderItems)
+        if (cart == null || !cart.CartItems.Any())
         {
-            var medicine = _dbContext.Medicines.FirstOrDefault(m => m.MedicineId == item.MedicineId);
-            if (medicine == null)
-            {
-                return NotFound(new { message = $"Medicine with ID {item.MedicineId} not found." });
-            }
+            return BadRequest(new { message = "Cart is empty." });
+        }
 
-            if (medicine.DonorId == donorId)
+        // Calculate total amount for sales medicines
+        decimal totalAmount = 0;
+        foreach (var item in cart.CartItems)
+        {
+            if (item.Medicine.Status == MedicineStatus.Sales)
             {
-                return BadRequest(new { message = "You cannot order your own medicine." });
+                totalAmount += item.Medicine.UnitPrice * item.Quantity;
             }
+        }
 
-            if (medicine.Status == MedicineStatus.Sales)
+        // Handle payment if totalAmount > 0
+        if (totalAmount > 0)
+        {
+            var charge = _stripeService.CreateCharge(
+                amount: totalAmount,
+                currency: "usd",
+                description: "Medicine Order Payment",
+                stripeToken: request.StripeToken
+            );
+
+            if (charge.Status != "succeeded")
             {
-                totalAmount += medicine.UnitPrice * item.Quantity; // Calculate total for sales medicines
+                return BadRequest(new { message = "Payment failed." });
             }
-
-            var deliveryPartner = _dbContext.DeliveryPartners.FirstOrDefault(dp => dp.Id == item.DeliveryPartnerId && dp.IsApproved);
-            if (deliveryPartner == null)
-            {
-                return NotFound(new { message = $"Delivery partner with ID {item.DeliveryPartnerId} not found or not approved." });
-            }
-
-            orderItems.Add(new OrderItemModel
-            {
-                Id = Guid.NewGuid(),
-                MedicineId = item.MedicineId,
-                Quantity = item.Quantity,
-                DeliveryPartnerId = item.DeliveryPartnerId
-            });
         }
 
         // Create the order
@@ -74,33 +78,24 @@ public class OrderController : ControllerBase
             Id = Guid.NewGuid(),
             OrderedByDonorId = donorId,
             OrderDate = DateTime.UtcNow,
-            OrderItems = orderItems,
-            TotalAmount = totalAmount
+            TotalAmount = totalAmount,
+            OrderItems = cart.CartItems.Select(ci => new OrderItemModel
+            {
+                Id = Guid.NewGuid(),
+                MedicineId = ci.MedicineId,
+                Quantity = ci.Quantity,
+                DeliveryPartnerId = ci.DeliveryPartnerId ?? Guid.Empty,
+            }).ToList()
         };
 
         _dbContext.Orders.Add(order);
+
+        // Clear the cart
+        _dbContext.CartItems.RemoveRange(cart.CartItems);
+        _dbContext.Carts.Remove(cart);
+
         _dbContext.SaveChanges();
 
-        // Handle payment if totalAmount > 0
-        if (totalAmount > 0)
-        {
-            var stripeOptions = new ChargeCreateOptions
-            {
-                Amount = (long)(totalAmount * 100), // Stripe expects amount in cents
-                Currency = "usd",
-                Description = "Medicine Order Payment",
-                Source = request.StripeToken // Token from frontend
-            };
-
-            var stripeService = new ChargeService();
-            var charge = stripeService.Create(stripeOptions);
-
-            if (charge.Status != "succeeded")
-            {
-                return BadRequest(new { message = "Payment failed." });
-            }
-        }
-
-        return Ok(new { message = "Order created successfully!", orderId = order.Id });
+        return Ok(new { message = "Order placed successfully!", orderId = order.Id });
     }
 }
