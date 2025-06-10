@@ -15,25 +15,32 @@ public class RelationMap
             .HasForeignKey(m => m.DonorId) // Foreign key in MedicineModel
             .OnDelete(DeleteBehavior.Cascade); // Cascade delete when a donor is deleted
 
-        // Define the relationship between OrderModel and MedicineModel
-        modelBuilder.Entity<OrderModel>()
-            .HasOne(o => o.Medicine) // An order is for one medicine
-            .WithMany() // A medicine can be part of many orders
-            .HasForeignKey(o => o.MedicineId) // Foreign key in OrderModel
+        // Define the relationship between CartModel and DonorModel
+        modelBuilder.Entity<CartModel>()
+            .HasOne(c => c.Donor)
+            .WithMany()
+            .HasForeignKey(c => c.DonorId)
+            .OnDelete(DeleteBehavior.Cascade); // Cascade delete when a donor is deleted
+
+        // Define the relationship between CartModel and CartItemModel
+        modelBuilder.Entity<CartModel>()
+            .HasMany(c => c.CartItems)
+            .WithOne(ci => ci.Cart)
+            .HasForeignKey(ci => ci.CartId)
+            .OnDelete(DeleteBehavior.Cascade); // Cascade delete when a cart is deleted
+
+        // Define the relationship between CartItemModel and MedicineModel
+        modelBuilder.Entity<CartItemModel>()
+            .HasOne(ci => ci.Medicine)
+            .WithMany()
+            .HasForeignKey(ci => ci.MedicineId)
             .OnDelete(DeleteBehavior.Restrict); // Restrict delete to prevent accidental deletion of medicines
 
-        // Define the relationship between OrderModel and DonorModel
-        modelBuilder.Entity<OrderModel>()
-            .HasOne(o => o.OrderedByDonor) // An order is placed by one donor
-            .WithMany() // A donor can place many orders
-            .HasForeignKey(o => o.OrderedByDonorId) // Foreign key in OrderModel
-            .OnDelete(DeleteBehavior.Restrict); // Restrict delete to prevent accidental deletion of donors
-
-        // Define the relationship between OrderModel and DeliveryPartnerModel
-        modelBuilder.Entity<OrderModel>()
-            .HasOne(o => o.DeliveryPartner) // An order is assigned to one delivery partner
-            .WithMany() // A delivery partner can handle many orders
-            .HasForeignKey(o => o.DeliveryPartnerId) // Foreign key in OrderModel
+        // Define the relationship between CartItemModel and DeliveryPartnerModel
+        modelBuilder.Entity<CartItemModel>()
+            .HasOne(ci => ci.DeliveryPartner)
+            .WithMany()
+            .HasForeignKey(ci => ci.DeliveryPartnerId)
             .OnDelete(DeleteBehavior.Restrict); // Restrict delete to prevent accidental deletion of delivery partners
     }
 }
