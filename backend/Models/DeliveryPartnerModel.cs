@@ -18,7 +18,7 @@ public class DeliveryPartnerModel
     [EmailAddress]
     public required string Email { get; set; } // Email of the delivery partner
 
-[Required]
+    [Required]
     public required string Password { get; set; } // Password for the delivery partner (hashed)
 
     [Required]
@@ -26,6 +26,12 @@ public class DeliveryPartnerModel
 
     [Required]
     public required string LicenseNumber { get; set; } // License number of the delivery partner
+
+   [Required]
+    public required string VehicleType { get; set; } // Type of vehicle used by the delivery partner
+
+    [Required]
+    public  required string  VehicleNumber { get; set; } // Vehicle number of the delivery partner
 
     [Required]
     public required string PhoneNumber { get; set; } // Phone number of the delivery partner

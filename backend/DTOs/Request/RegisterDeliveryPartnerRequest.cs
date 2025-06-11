@@ -25,5 +25,11 @@ public class RegisterDeliveryPartnerRequest
     public required string LicenseNumber { get; set; }
 
     [Required]
+    public required string VehicleType { get; set; }
+
+    [Required]
+    public required string VehicleNumber { get; set; }
+
+    [Required]
     public required string PhoneNumber { get; set; }
 }

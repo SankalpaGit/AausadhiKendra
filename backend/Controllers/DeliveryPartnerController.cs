@@ -44,6 +44,8 @@ public class DeliveryPartnerController : ControllerBase
             Password = _passwordService.HashPassword(request.Password), // Hash the password
             Address = request.Address,
             LicenseNumber = request.LicenseNumber,
+            VehicleType = request.VehicleType,
+            VehicleNumber = request.VehicleNumber,
             PhoneNumber = request.PhoneNumber,
             IsApproved = false // Default to not approved
         };
