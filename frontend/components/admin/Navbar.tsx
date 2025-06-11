@@ -1,14 +1,8 @@
-// components/admin/Navbar.tsx
 'use client';
-import React from 'react';
-import {
-    FiMenu,
-    FiX,
-    FiBell,
-    FiChevronDown,
-    FiLogOut,
-    FiUser,
-} from 'react-icons/fi';
+
+import React, { useState } from 'react';
+import { FiMenu, FiX, FiBell, FiChevronDown, FiLogOut, FiUser } from 'react-icons/fi';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Dropdown from '@/components/ui/Dropdown';
 
@@ -18,6 +12,26 @@ interface NavbarProps {
 }
 
 export default function Navbar({ sidebarOpen, toggleSidebar }: NavbarProps) {
+    const [loggingOut, setLoggingOut] = useState(false);
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        setLoggingOut(true);
+
+        try {
+            // Clear local storage (including token)
+            localStorage.clear();
+
+            // Simulate a delay to show the logout message
+            setTimeout(() => {
+                router.push('/admin');
+            }, 1500);
+        } catch (err) {
+            console.error('Logout error:', err);
+            setLoggingOut(false);
+        }
+    };
+
     return (
         <header className="bg-white shadow h-16 flex items-center justify-between px-4 md:px-6">
             <div className="flex items-center gap-4">
@@ -38,21 +52,31 @@ export default function Navbar({ sidebarOpen, toggleSidebar }: NavbarProps) {
                 {/* Profile Dropdown */}
                 <Dropdown
                     content={
-                        <div className="text-sm w-36"> {/* Set wider width */}
+                        <div className="text-sm w-36">
                             <Link
                                 href="/admin/profile"
                                 className="flex items-center gap-2 px-4 py-4 hover:bg-gray-100 text-gray-800 font-semibold"
                             >
-                                <FiUser className="w-5 h-5" /> {/* icon */}
+                                <FiUser className="w-5 h-5" />
                                 Profile
                             </Link>
-                            <Link
-                                href="/logout"
-                                className="flex items-center gap-2 px-4 py-4 hover:bg-gray-100 text-red-600 font-semibold"
+                            <button
+                                onClick={handleLogout}
+                                disabled={loggingOut}
+                                className="flex items-center gap-2 px-4 py-4 w-full text-left hover:bg-gray-100 text-red-600 font-semibold disabled:opacity-50"
                             >
-                                <FiLogOut className="w-5 h-5" /> {/* icon */}
-                                Logout
-                            </Link>
+                                {loggingOut ? (
+                                    <>
+                                        <FiLogOut className="w-5 h-5 animate-spin" />
+                                        Logging out...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FiLogOut className="w-5 h-5" />
+                                        Logout
+                                    </>
+                                )}
+                            </button>
                         </div>
                     }
                 >

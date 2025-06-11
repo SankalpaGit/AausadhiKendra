@@ -79,14 +79,7 @@ export default function Sidebar({ sidebarOpen, toggleSidebar }: SidebarProps) {
                 <MdVolunteerActivism />
                 Donor
               </Link>
-              <Link
-                href="/admin/requests/receiver"
-                onClick={handleLinkClick}
-                className="flex items-center gap-2 px-4 py-2 rounded hover:bg-teal-800"
-              >
-                <MdLocalHospital />
-                Receiver
-              </Link>
+              
               <Link
                 href="/admin/requests/delivery"
                 onClick={handleLinkClick}

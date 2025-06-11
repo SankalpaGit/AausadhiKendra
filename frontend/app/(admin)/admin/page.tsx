@@ -1,56 +1,88 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 interface Credentials {
-    username: string;
+    email: string;
     password: string;
 }
 
 export default function Page() {
+    // state  name
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(''); // New state for success message
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
-        e.preventDefault();
-
+    // handle submit function for form submission
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+        e.preventDefault(); // Prevent default form submission behavior
         setLoading(true);
-        const creds: Credentials = { username, password };
+        setError('');
+        setSuccess(''); // Reset success message
 
-        // Simulate API delay
-        setTimeout(() => {
-            console.log('Logging in with:', creds);
+        // Validate credentials
+        const creds: Credentials = {
+            email: username,
+            password,
+        };
+
+        try {
+            //api url
+            const res = await axios.post('http://localhost:5134/api/Admin/login', creds);
+
+            // Check if response contains token
+            const token = res.data?.token;
+            if (!token) {
+                throw new Error('Token not received from API');
+            }
+
+            // Save token to localStorage
+            localStorage.setItem('token', token);
+
+            // Set success message
+            setSuccess('Login successful! Redirecting to dashboard...');
+
+            // timeout and redirect to dashboard
+            setTimeout(() => {
+                window.location.href = '/admin/dashboard';
+            }, 1500);
+
+        } catch (err: any) {
+            console.error('Login error:', err);
+            setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+        } finally {
             setLoading(false);
-        }, 1500);
+        }
     };
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
             <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
                 <div className="mb-6 flex items-center gap-x-4 w-fit m-auto">
-                    {/* Larger Logo */}
                     <img src="/Favicon.png" alt="Logo" className="h-20 w-20" />
                     <div>
                         <h1 className="text-2xl font-bold text-gray-700">Admin Sign In</h1>
-                        <p className='text-sm text-gray-500'>Login and manage your dashboard</p>
+                        <p className="text-sm text-gray-500">Login and manage your dashboard</p>
                     </div>
                 </div>
-
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label htmlFor="username" className="mb-1 block text-sm font-medium text-gray-700">
-                            Username
+                            Email
                         </label>
                         <input
                             id="username"
-                            type="text"
+                            type="email"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            placeholder="Enter your username"
+                            placeholder="Enter your email"
                             className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 shadow-sm transition focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
                         />
                     </div>
@@ -77,6 +109,14 @@ export default function Page() {
                         </button>
                     </div>
 
+                    {/* Display success or error messages */}
+                    {success && (
+                        <p className="text-green-500 text-sm text-center">{success}</p>
+                    )}
+                    {error && (
+                        <p className="text-red-500 text-sm text-center">{error}</p>
+                    )}
+
                     <button
                         type="submit"
                         disabled={loading}
@@ -87,7 +127,7 @@ export default function Page() {
                 </form>
 
                 <p className="mt-6 text-center text-xs text-gray-400">
-                    &copy; {new Date().getFullYear()} Aausadhikendra. All rights reserved.
+                    © {new Date().getFullYear()} Aausadhikendra. All rights reserved.
                 </p>
             </div>
         </div>
