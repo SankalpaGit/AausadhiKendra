@@ -66,8 +66,8 @@ export default function Page() {
       {/* Left side: Illustration and Info (desktop only) */}
       <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-green-100 p-10">
         <h1 className="text-5xl font-extrabold text-green-700 mb-4 text-center tracking-wide font-serif">
-  <span className="text-gray-800">Aushadhi</span><span className="text-green-600">Kendra</span>
-</h1>
+          <span className="text-gray-800">Aushadhi</span><span className="text-green-600">Kendra</span>
+        </h1>
 
 
         <h2 className="text-2xl font-semibold text-gray-600 text-center mb-4">

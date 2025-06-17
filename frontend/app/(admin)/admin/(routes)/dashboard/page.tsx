@@ -9,7 +9,6 @@ import {
 } from "react-icons/fi";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import gsap from "gsap";
 
 type Medicine = {
   id: number;
@@ -24,28 +23,6 @@ export default function DashboardPage() {
   const cardsRef = useRef<HTMLDivElement[]>([]);
   const actionsRef = useRef<HTMLDivElement>(null);
 
-
-  useEffect(() => {
-    cardsRef.current.forEach((card, i) => {
-      gsap.from(card, {
-        opacity: 0,
-        y: 20,
-        duration: 0.6,
-        delay: i * 0.15,
-        ease: "power3.out",
-      });
-    });
-
-    if (actionsRef.current) {
-      gsap.from(actionsRef.current, {
-        opacity: 0,
-        y: 30,
-        duration: 0.6,
-        delay: 0.9,
-        ease: "power3.out",
-      });
-    }
-  }, []);
 
   return (
     <div className="px-4 md:px-8 py-6 min-h-screen w-full">
