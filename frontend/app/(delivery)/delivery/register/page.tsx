@@ -15,7 +15,6 @@ export default function DeliveryPartnerRegister() {
     const [licenseNumber, setLicenseNumber] = useState('');
     const [password, setPassword] = useState('');
     const [vehicleType, setVehicleType] = useState('');
-
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
@@ -40,6 +39,7 @@ export default function DeliveryPartnerRegister() {
                 licenseNumber,
                 phoneNumber: phone,
                 vehicleType, // even if backend doesn't need it now, you can add this
+                vehicleNumber
             });
 
             setSuccess(response.data.message);
