@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { FaUserSlash, FaCheck, FaTimes } from 'react-icons/fa';
-import { fetchOrganizationDonors, verifyDonor } from '@/services/OrganizationRequest';
+import { fetchOrganizationDonors } from '@/services/viewRegistrationRequestService'
+import { verifyDonor } from '@/services/reviewRegistrationServices';
 
 type Donor = {
     id: string;

@@ -9,12 +9,10 @@ export default function Page() {
   const [hasMounted, setHasMounted] = useState(false);
   const [userType, setUserType] = useState<"individual" | "organization">("individual");
   const [organizationType, setOrganizationType] = useState<"pharmacy" | "hospital" | "">("");
-
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [document, setDocument] = useState<File | null>(null);
-
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {

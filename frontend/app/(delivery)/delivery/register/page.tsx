@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
-import axios from 'axios';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
+import { deliveryPartnerRegister } from '@/services/registerUsersServices';
 
 const vehicleOptions = ['Bike', 'Scooter'];
 
@@ -30,7 +30,7 @@ export default function DeliveryPartnerRegister() {
         const lastName = rest.join(' ');
 
         try {
-            const response = await axios.post('http://localhost:5134/api/delivery-partner/register', {
+            const response = await deliveryPartnerRegister({
                 firstName,
                 lastName,
                 email,
