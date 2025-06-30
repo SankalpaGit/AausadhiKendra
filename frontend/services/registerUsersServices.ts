@@ -17,9 +17,3 @@ export const deliveryPartnerRegister = async (data: {
     const response = await axios.post(`${API_BASE_URL}/delivery-partner/register`, data);
     return response.data;
 };
-
-
-// Function for the donor registration
-export const donorRegistration = async () => {
-
-}

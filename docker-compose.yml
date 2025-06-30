@@ -22,7 +22,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5106
-      - ConnectionStrings__DefaultConnection=Host=db;Database=mydb;Username=postgres;Password=password
+      - - ConnectionStrings__DefaultConnection=Host=db;Database=AausadhiKendra;Username=postgres;Password=${POSTGRES_PASSWORD}
     depends_on:
       - db
     networks:
