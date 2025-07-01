@@ -12,7 +12,8 @@ export default function DonorLayout({
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <UserNavbar />
-            <main className="flex-grow px-4 md:px-8 py-6">{children}</main>
+            <main className="flex-grow pt-20 px-4 md:px-8 py-6">{children}</main>
+
             <UserFooter />
         </div>
     );

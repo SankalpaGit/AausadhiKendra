@@ -31,7 +31,8 @@ export default function UserNavbar() {
     const isActive = (href: string) => pathname === href;
 
     return (
-        <nav className="w-full bg-white shadow-md px-6 py-4 flex items-center justify-between relative">
+       <nav className="fixed top-0 left-0 w-full bg-white shadow-md px-6 py-4 flex items-center justify-between z-50">
+
             {/* Logo - Left */}
             <div className="flex-1 flex justify-start lg:ml-5">
                 <Link
@@ -76,7 +77,7 @@ export default function UserNavbar() {
                     <Dropdown
                         content={
                             <div className="flex flex-col space-y-2 text-sm text-gray-800 min-w-[160px]">
-                                <Link href="/profile" className="hover:text-green-700 flex items-center gap-2">
+                                <Link href="/donor/profiles" className="hover:text-green-700 flex items-center gap-2">
                                     <FiUser className="w-4 h-4" /> Profile
                                 </Link>
                                 <Link
