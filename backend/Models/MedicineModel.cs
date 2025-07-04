@@ -29,5 +29,5 @@ public class MedicineModel
     public Guid DonorId { get; set; }
 
     [ForeignKey("DonorId")]
-    public DonorModel ? Donor { get; set; } // Navigation property for the donor
+    public DonorModel? Donor { get; set; } // Navigation property for the donor
 }

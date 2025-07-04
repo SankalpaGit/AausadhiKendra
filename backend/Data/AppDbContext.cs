@@ -19,8 +19,8 @@ public class AppDbContext : DbContext
 
     public DbSet<CartModel> Carts { get; set; } // CartModel name as Carts in database
     public DbSet<CartItemModel> CartItems { get; set; } // CartItemModel name as CartItems in database
-    // Model builder configuration
-    // This method is called when the model for a derived context is being created.
+                                                        // Model builder configuration
+                                                        // This method is called when the model for a derived context is being created.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

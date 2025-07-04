@@ -4,6 +4,7 @@ using backend.Models;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace backend.Controllers;
 
@@ -24,8 +25,15 @@ public class MedicineController : ControllerBase
     [Authorize(Roles = "Donor")]
     public IActionResult AddMedicine([FromBody] AddMedicineRequest request)
     {
+        // Extract donor ID from JWT claims
+        var donorIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (donorIdClaim == null || !Guid.TryParse(donorIdClaim, out var donorId))
+        {
+            return Unauthorized(new { message = "Invalid or missing donor ID in token." });
+        }
+
         // Validate donor existence
-        var donor = _dbContext.Donors.FirstOrDefault(d => d.Id == request.DonorId);
+        var donor = _dbContext.Donors.FirstOrDefault(d => d.Id == donorId);
         if (donor == null)
         {
             return NotFound(new { message = "Donor not found." });
@@ -39,7 +47,7 @@ public class MedicineController : ControllerBase
             UnitPrice = request.UnitPrice,
             ExpiryDate = request.ExpiryDate,
             Quantity = request.Quantity,
-            DonorId = request.DonorId,
+            DonorId = donorId,
             Status = _statusService.DetermineStatus(new MedicineModel
             {
                 Name = request.Name,
@@ -60,17 +68,24 @@ public class MedicineController : ControllerBase
     [Authorize(Roles = "Donor")]
     public IActionResult AddBulkMedicines([FromBody] AddBulkMedicineRequest request)
     {
+        // Extract donor ID from JWT claims
+        var donorIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (donorIdClaim == null || !Guid.TryParse(donorIdClaim, out var donorId))
+        {
+            return Unauthorized(new { message = "Invalid or missing donor ID in token." });
+        }
+
+        // Validate donor existence
+        var donor = _dbContext.Donors.FirstOrDefault(d => d.Id == donorId);
+        if (donor == null)
+        {
+            return NotFound(new { message = "Donor not found." });
+        }
+
         var medicines = new List<MedicineModel>();
 
         foreach (var medicineRequest in request.Medicines)
         {
-            // Validate donor existence
-            var donor = _dbContext.Donors.FirstOrDefault(d => d.Id == medicineRequest.DonorId);
-            if (donor == null)
-            {
-                return NotFound(new { message = $"Donor with ID {medicineRequest.DonorId} not found." });
-            }
-
             // Create and determine status
             var medicine = new MedicineModel
             {
@@ -79,7 +94,7 @@ public class MedicineController : ControllerBase
                 UnitPrice = medicineRequest.UnitPrice,
                 ExpiryDate = medicineRequest.ExpiryDate,
                 Quantity = medicineRequest.Quantity,
-                DonorId = medicineRequest.DonorId,
+                DonorId = donorId,
                 Status = _statusService.DetermineStatus(new MedicineModel
                 {
                     Name = medicineRequest.Name,

@@ -100,7 +100,7 @@ public class DonorController : ControllerBase
             return Unauthorized(new { message = "Your account is not verified yet." });
         }
 
-        var token = _jwtService.GenerateToken(donor.Id, donor.Email, donor.DonorType);
+        var token = _jwtService.GenerateToken(donor.Id, donor.Email, "Donor");
         return Ok(new { token });
     }
 

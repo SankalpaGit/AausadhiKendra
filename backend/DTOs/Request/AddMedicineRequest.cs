@@ -16,7 +16,4 @@ public class AddMedicineRequest
 
     [Required]
     public int Quantity { get; set; } // Quantity of the medicine
-
-    [Required]
-    public Guid DonorId { get; set; } // Donor ID
 }
